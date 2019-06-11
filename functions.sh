@@ -1,5 +1,7 @@
 #!/bin/bash
 
+QOS=2
+
 declare -A MOSQUITTOS
 declare -A SUBSCRIPTIONS
 
@@ -26,13 +28,16 @@ CLIENTID="$1"
 TOPIC="$2"
 MESSAGE="$3"
 echo "Publishing \"${MESSAGE}\" to ${TOPIC} on ${CLIENTID}"
-mosquitto_pub -h ${CLIENTID}.mosquitto -t ${TOPIC} -m ${MESSAGE}
+mosquitto_pub -q ${QOS} -h ${CLIENTID}.mosquitto -t ${TOPIC} -m ${MESSAGE}
 }
 
 function subscribe() {
 CLIENTID="$1"
 echo "Subscribing to ${CLIENTID}"
-mosquitto_sub -h ${CLIENTID}.mosquitto -v -t "#" | while read TOPIC MESSAGE; do echo "Read from ${TOPIC} on ${CLIENTID}: ${MESSAGE}"; done &
+mosquitto_sub -q ${QOS} -h ${CLIENTID}.mosquitto -v -t "#" | \
+while read TOPIC MESSAGE; do 
+  echo "Read from ${TOPIC} on ${CLIENTID}: ${MESSAGE}"
+done &
 SUBSCRIPTIONS[${CLIENTID}]=$!
 sleep 1
 }
